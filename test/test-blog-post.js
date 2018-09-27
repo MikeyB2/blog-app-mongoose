@@ -45,7 +45,6 @@ function seedBlogPostData() {
             content: faker.lorem.text()
         });
     }
-    // this will return a promise
     return BlogPost.insertMany(seedData);
 }
 
@@ -60,43 +59,34 @@ describe('blog posts API resource', function () {
         return seedBlogPostData();
     });
 
-    afterEach(function () {
-        // tear down database so we ensure no state from this test
-        // effects any coming after.
-        return tearDownDb();
-    });
+    afterEach(function () {});
 
     after(function () {
         return closeServer();
     });
 
-    // note the use of nested `describe` blocks.
-    // this allows us to make clearer, more discrete tests that focus
-    // on proving something small
+    // beginning of testing
     describe('GET endpoint', function () {
 
         it('should return all existing posts', function () {
             // strategy:
-            //    1. get back all posts returned by by GET request to `/posts`
-            //    2. prove res has right status, data type
+            //    1. need to get back all posts returned by by GET request to `/posts`
+            //    2. confirm res has right status, data type
             //    3. prove the number of posts we got back is equal to number
             //       in db.
             let res;
             return chai.request(app)
                 .get('/posts')
-                .then(_res => {
+                .then(function (_res) {
                     res = _res;
                     expect(res).to.have.status(200);
-                    // otherwise our db seeding didn't work
-                    console.log("TESTING TEST:" + res);
-                    expect(res.body.BlogPost).to.have.lengthOf.at.least(1);
+                    console.log("TESTING TEST:" + res.body.blogPosts);
+                    expect(res.body.blogPosts).to.have.lengthOf.at.least(1);
 
                     return BlogPost.count();
                 })
                 .then(count => {
-                    // the number of returned posts should be same
-                    // as number of posts in DB
-                    expect(res.body.BlogPost).to.have.lengthOf(count);
+                    expect(res.body.blogPosts).to.have.lengthOf(count);
                 });
         });
 
@@ -118,8 +108,7 @@ describe('blog posts API resource', function () {
                         expect(post).to.be.a('object');
                         expect(post).to.include.keys('id', 'title', 'content', 'author', 'created');
                     });
-                    // just check one of the posts that its values match with those in db
-                    // and we'll assume it's true for rest
+                    // check to make sure response data matches db data
                     resPost = res.body.blogPosts[0];
                     return BlogPost.findById(resPost.id);
                 })
@@ -132,10 +121,7 @@ describe('blog posts API resource', function () {
     });
 
     describe('POST endpoint', function () {
-        // strategy: make a POST request with data,
-        // then prove that the post we get back has
-        // right keys, and that `id` is there (which means
-        // the data was inserted into db)
+        // make a post request and get the data back
         it('should add a new blog post', function () {
 
             const newPost = {
@@ -157,7 +143,6 @@ describe('blog posts API resource', function () {
                     expect(res.body).to.include.keys(
                         'id', 'title', 'content', 'author', 'created');
                     expect(res.body.title).to.equal(newPost.title);
-                    // cause Mongo should have created id on insertion
                     expect(res.body.id).to.not.be.null;
                     expect(res.body.author).to.equal(
                         `${newPost.author.firstName} ${newPost.author.lastName}`);
@@ -176,9 +161,9 @@ describe('blog posts API resource', function () {
     describe('PUT endpoint', function () {
 
         // strategy:
-        //  1. Get an existing post from db
-        //  2. Make a PUT request to update that post
-        //  4. Prove post in db is correctly updated
+        //  need to get a post from the db
+        // update that post fromt he id
+        // check data
         it('should update fields you send over', function () {
             const updateData = {
                 title: 'cats cats cats',
@@ -213,10 +198,8 @@ describe('blog posts API resource', function () {
 
     describe('DELETE endpoint', function () {
         // strategy:
-        //  1. get a post
-        //  2. make a DELETE request for that post's id
-        //  3. assert that response has right status code
-        //  4. prove that post with the id doesn't exist in db anymore
+        //  get a post to retreive the id
+        // delete that id
         it('should delete a post by id', function () {
 
             let post;
@@ -232,10 +215,6 @@ describe('blog posts API resource', function () {
                     return BlogPost.findById(post.id);
                 })
                 .then(_post => {
-                    // when a variable's value is null, chaining `should`
-                    // doesn't work. so `_post.should.be.null` would raise
-                    // an error. `should.be.null(_post)` is how we can
-                    // make assertions about a null value.
                     expect(_post).to.be.null;
                 });
         });
