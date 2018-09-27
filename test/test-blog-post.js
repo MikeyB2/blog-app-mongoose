@@ -5,8 +5,6 @@ const chaiHttp = require('chai-http');
 const faker = require('faker');
 const mongoose = require('mongoose');
 const expect = chai.expect;
-const should = chai.should;
-//  expect(res).to.have.status(200);
 
 const {
     BlogPost
@@ -22,10 +20,7 @@ const {
 
 chai.use(chaiHttp);
 
-// this function deletes the entire database.
-// we'll call it in an `afterEach` block below
-// to ensure  ata from one test does not stick
-// around for next one
+// delete the database after each function
 function tearDownDb() {
     return new Promise((resolve, reject) => {
         console.warn('Deleting database');
@@ -36,11 +31,7 @@ function tearDownDb() {
 }
 
 
-// used to put randomish documents in db
-// so we have data to work with and assert about.
-// we use the Faker library to automatically
-// generate placeholder values for author, title, content
-// and then we insert that data into mongo
+// create seed data
 function seedBlogPostData() {
     console.info('seeding blog post data');
     const seedData = [];
@@ -95,16 +86,17 @@ describe('blog posts API resource', function () {
                 .get('/posts')
                 .then(_res => {
                     res = _res;
-                    res.should.have.status(200);
+                    expect(res).to.have.status(200);
                     // otherwise our db seeding didn't work
-                    res.body.should.have.lengthOf.at.least(1);
+                    console.log("TESTING TEST:" + res);
+                    expect(res.body.BlogPost).to.have.lengthOf.at.least(1);
 
                     return BlogPost.count();
                 })
                 .then(count => {
                     // the number of returned posts should be same
                     // as number of posts in DB
-                    res.body.should.have.lengthOf(count);
+                    expect(res.body.BlogPost).to.have.lengthOf(count);
                 });
         });
 
@@ -116,24 +108,25 @@ describe('blog posts API resource', function () {
                 .get('/posts')
                 .then(function (res) {
 
-                    res.should.have.status(200);
-                    res.should.be.json;
-                    res.body.should.be.a('array');
-                    res.body.should.have.lengthOf.at.least(1);
+                    expect(res).to.have.status(200);
+                    expect(res).to.be.json;
+                    console.log('BODY TESTING:' + res.body.blogPosts)
+                    expect(res.body.blogPosts).to.be.a('array');
+                    expect(res.body.blogPosts).to.have.lengthOf.at.least(1);
 
-                    res.body.forEach(function (post) {
-                        post.should.be.a('object');
-                        post.should.include.keys('id', 'title', 'content', 'author', 'created');
+                    res.body.blogPosts.forEach(function (post) {
+                        expect(post).to.be.a('object');
+                        expect(post).to.include.keys('id', 'title', 'content', 'author', 'created');
                     });
                     // just check one of the posts that its values match with those in db
                     // and we'll assume it's true for rest
-                    resPost = res.body[0];
+                    resPost = res.body.blogPosts[0];
                     return BlogPost.findById(resPost.id);
                 })
                 .then(post => {
-                    resPost.title.should.equal(post.title);
-                    resPost.content.should.equal(post.content);
-                    resPost.author.should.equal(post.authorName);
+                    expect(resPost.title).to.equal(post.title);
+                    expect(resPost.content).to.equal(post.content);
+                    expect(resPost.author).to.equal(post.authorName);
                 });
         });
     });
@@ -158,24 +151,24 @@ describe('blog posts API resource', function () {
                 .post('/posts')
                 .send(newPost)
                 .then(function (res) {
-                    res.should.have.status(201);
-                    res.should.be.json;
-                    res.body.should.be.a('object');
-                    res.body.should.include.keys(
+                    expect(res).to.have.status(201);
+                    expect(res).to.be.json;
+                    expect(res.body).to.be.a('object');
+                    expect(res.body).to.include.keys(
                         'id', 'title', 'content', 'author', 'created');
-                    res.body.title.should.equal(newPost.title);
+                    expect(res.body.title).to.equal(newPost.title);
                     // cause Mongo should have created id on insertion
-                    res.body.id.should.not.be.null;
-                    res.body.author.should.equal(
+                    expect(res.body.id).to.not.be.null;
+                    expect(res.body.author).to.equal(
                         `${newPost.author.firstName} ${newPost.author.lastName}`);
-                    res.body.content.should.equal(newPost.content);
+                    expect(res.body.content).to.equal(newPost.content);
                     return BlogPost.findById(res.body.id);
                 })
                 .then(function (post) {
-                    post.title.should.equal(newPost.title);
-                    post.content.should.equal(newPost.content);
-                    post.author.firstName.should.equal(newPost.author.firstName);
-                    post.author.lastName.should.equal(newPost.author.lastName);
+                    expect(post.title).to.equal(newPost.title);
+                    expect(post.content).to.equal(newPost.content);
+                    expect(post.author.firstName).to.equal(newPost.author.firstName);
+                    expect(post.author.lastName).to.equal(newPost.author.lastName);
                 });
         });
     });
@@ -206,14 +199,14 @@ describe('blog posts API resource', function () {
                         .send(updateData);
                 })
                 .then(res => {
-                    res.should.have.status(204);
+                    expect(res).to.have.status(204);
                     return BlogPost.findById(updateData.id);
                 })
                 .then(post => {
-                    post.title.should.equal(updateData.title);
-                    post.content.should.equal(updateData.content);
-                    post.author.firstName.should.equal(updateData.author.firstName);
-                    post.author.lastName.should.equal(updateData.author.lastName);
+                    expect(post.title).to.equal(updateData.title);
+                    expect(post.content).to.equal(updateData.content);
+                    expect(post.author.firstName).to.equal(updateData.author.firstName);
+                    expect(post.author.lastName).to.equal(updateData.author.lastName);
                 });
         });
     });
@@ -235,7 +228,7 @@ describe('blog posts API resource', function () {
                     return chai.request(app).delete(`/posts/${post.id}`);
                 })
                 .then(res => {
-                    res.should.have.status(204);
+                    expect(res).to.have.status(204);
                     return BlogPost.findById(post.id);
                 })
                 .then(_post => {
@@ -243,7 +236,7 @@ describe('blog posts API resource', function () {
                     // doesn't work. so `_post.should.be.null` would raise
                     // an error. `should.be.null(_post)` is how we can
                     // make assertions about a null value.
-                    should.not.exist(_post);
+                    expect(_post).to.be.null;
                 });
         });
     });
