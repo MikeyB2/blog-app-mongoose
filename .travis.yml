@@ -2,3 +2,10 @@ language: node_js
 node_js: node
 services:
   - mongodb
+deploy:
+  provider: heroku
+  api_key:
+    secure: WrXII3w1xc4W1nkO4+cDXx053IPfTcTjMw7Gog9Sq6EuQrjNLW7V9DYlYFERhrQeKUvb6u6COBQFN0KOjGX2T4fMIM9G+MKsiGLGH5pyGLiQ/pslqniSEsaROi3luUdl4qyaQAI1qmBFPGCHcVlBWacJOe+nrxjaQTbzfh8Re7E/lDqYQBWcIFXaBR5wU+ydXIQ4yZu6kAYJvVYHfestyYt5wDrVGDP8CzN1xhbLIKaxCdwVo9XcJW4vMcqH6iPYJbCwZSQo6E5svEgkDxjm5NfuQM6B6qF27B8/tJyFai0EbmGpLjYCJoDlpZLDgA4wfhPk+WuBW0QQY5QLuSqPV+ETCbnMMln4EUzHXk/R+iMWpYsvfmk4vOEgcrWBzVK5PYC6g/+Y9UrjA7hjgtmn6OaQSZ9tmafywEZG1tFNcINtpdD3QXj+6ryGm+dzBpIg4nhYV8+IOZ7AxN7td/sg55nmgtedaoVVHzbKnf1ztLy5/L6jM0Npmewjd/RxOijWblcLQfLID/P2RzKZB6LIxfNTYbpOo+cnZ0X5upktOjUXl4HCoSZdRClq5bUXwTdB0DBiCkBAf7ujC2KRFhyPFtTXV3B3Fc5AS+aE/dUctew0P/NcwDHNxjyP0PlmaZ6MvDPsJhywMZIe6KpNtN7/1KoppzzYTyp8b7qBtXbdwYc=
+  app: https://young-badlands-52244.herokuapp.com/
+  on:
+    repo: MikeyB2/blog-app-mongoose
